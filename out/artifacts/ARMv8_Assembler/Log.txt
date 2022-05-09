@@ -1,0 +1,6 @@
+Log Report (input.txt)
+	1 Errors Detected
+
+Error: Line 1
+	'SFD' is an invalid ARMv8 Instruction
+

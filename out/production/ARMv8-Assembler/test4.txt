@@ -1,0 +1,5 @@
+MOV X2, X1
+Label:
+ADD X2, X1, XZR
+ADD X2, X1, XZR
+CBNZ X2, Label
