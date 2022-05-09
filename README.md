@@ -1,2 +1,5 @@
 # ARMv8-Assembler
-an Armv8-Assembler with GUI
+
+Software Project for Assembly Language
+2022/5/9
+
