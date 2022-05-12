@@ -104,6 +104,14 @@ public class Armv8gui {
             while ((len = bis.read(buf)) != -1) {
                 cmpresult.append(new String(buf, 0, len));
             }
+            int tmp=0;
+            while(tmp < cmpresult.length()){
+                for(int i=29;i>3;i-=4){
+                    cmpresult.insert(tmp + i,' ');//repeat 7 times each line
+                }
+                tmp = tmp + 32 + 7 + 2;// 32 machine code,7 blank characters,2 \r\n
+            }
+            tmp = 0;
             outputArea.setText(cmpresult.toString());
 
             bis.close();
