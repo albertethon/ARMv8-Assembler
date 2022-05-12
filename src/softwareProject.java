@@ -214,7 +214,7 @@ public class softwareProject
                     //This if statment disects up the line if a ":" is present anywhere...even if it is part of a comment
 
                     if(line.contains(":")){
-                        String[] parts = line.split(": ");
+                        String[] parts = line.split(": *");
                         //just a label---no code
                         if(parts.length==1){
                             String[] partsNew = line.split(":\t");
@@ -415,6 +415,11 @@ public class softwareProject
             createInstruction( currentInstruction );
 
         }
+        else if( command.equals("BLR")){
+            opcode = "11010110001";
+            format = "R";
+            createInstruction( currentInstruction);
+        }
         else if( command.equals("CBNZ")){
             opcode = "10110101";
             format = "CB";
@@ -542,6 +547,11 @@ public class softwareProject
             format = "R";
             createInstruction( currentInstruction );
 
+        }
+        else if( command.equals("BRK")){
+            opcode = "11010100001";
+            format = "IM";
+            createInstruction(currentInstruction );
         }
         else if( command.equals("NEG")){
             //NEG X2, X3
@@ -804,7 +814,7 @@ public class softwareProject
             }
 
             //If command is RET...translate to BR LR
-            else if((currentCommand.equals("RET"))|| currentCommand.equals("BR")){
+            else if((currentCommand.equals("RET"))|| currentCommand.equals("BR") || currentCommand.equals("BLR")){
 
                 //Rt from instruction is Rn accoring to the format on the
                 //green reference sheet.
@@ -1102,10 +1112,10 @@ public class softwareProject
                 else if(currentCommand.equals("B.NE")){
                     rt = "00001";
                 }
-                else if(currentCommand.equals("B.HS")){
+                else if(currentCommand.equals("B.HS") || currentCommand.equals("B.CS")){
                     rt = "00010";
                 }
-                else if(currentCommand.equals("B.LO")){
+                else if(currentCommand.equals("B.LO") || currentCommand.equals("B.CC")){
                     rt = "00011";
                 }
                 else if(currentCommand.equals("B.MI")){
@@ -1161,7 +1171,7 @@ public class softwareProject
         //IM / IW format
         else if( format.equals("IM")) {
             String lslCommand = null;
-            String hw="";
+            String hw=(currentCommand.equals("MOVZ") || currentCommand.equals("MOVK"))?"00":"";//movz without imm
             StringTokenizer st = new StringTokenizer(currentInstruction, " X,;/\t#");
             int i = 0;
             boolean err=false;
@@ -1172,10 +1182,7 @@ public class softwareProject
                 else if( i == 2) {
                     immediate = currentToken;
                 }else if (i == 3){
-                    if(currentToken.equals("LSL") && currentCommand.equals("MOVZ")){
-                        i++;
-                        continue;
-                    } else if (currentToken.equals("LSL") && currentCommand.equals("MOVK")) {
+                    if(currentToken.equals("LSL") && (currentCommand.equals("MOVZ") || currentCommand.equals("MOVK"))){
                         i++;
                         continue;
                     } else {
@@ -1202,6 +1209,11 @@ public class softwareProject
                 err = false;
             }else {
                 checkForSpecReg();
+
+                if(currentCommand.equals("BRK")){
+                    immediate = (rd==null)?"0":rd;
+                    rd = "0";
+                }
 
                 int tempInt = 0;
                 tempInt = Integer.parseInt(rd);

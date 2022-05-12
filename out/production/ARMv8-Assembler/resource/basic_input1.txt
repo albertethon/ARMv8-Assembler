@@ -10,6 +10,8 @@ B echo
 B.EQ alpha
 B.NE foxtrot
 B.HS bravo
+B.CS bravo
+B.CC charlie
 B.LO charlie
 B.MI alpha
 B.PL delta
@@ -25,6 +27,7 @@ B.AL echo
 B.NV alpha
 BL bravo
 BR X8
+BLR X8
 CBNZ X10, golf
 echo: CBZ SP, charlie
 EOR X9, X7, X11
@@ -44,6 +47,8 @@ CMP SP, X13
 CMPI X1, #10
 MOV X5, X25
 NOP
+BRK
+BRK #7
 NEG X23, X10
 golf: RET
 MOVK X9, #255, LSL #16
