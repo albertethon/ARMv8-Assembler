@@ -673,12 +673,17 @@ public class softwareProject
                 }
                 else if( currentCommand.equals("MOV")){
                     rm = rn;
-                    rn = "XZR";
-                    shamt = "0";
-                }
+                    rn = "XZR";}
                 else if( currentCommand.equals("NEG")){
                     rm = rn;
                     rn = "ZR";
+                }
+                //fill up the shamt area
+                switch(currentCommand){
+                    case "MUL":shamt = "011111";break;
+                    case "UDIV":shamt = "000010";break;
+                    case "SDIV":shamt = "000011";break;
+                    default:shamt = "000000";break;
                 }
 
                 //Translates registers SP, LR,ZR and FP to their decimal values
@@ -702,40 +707,27 @@ public class softwareProject
                 tempInt = Integer.parseInt(rm);
                 rm = String.format("%05d", tempInt);
 
-                if(currentCommand.equals("MUL")){
-                    shamt = "011111";
-                }
-                else if(currentCommand.equals("UDIV")){
-                    shamt = "000010";
-                }
-                else if(currentCommand.equals("SDIV")){
-                    shamt = "000011";
-                }
-                else{
-                    shamt = "000000";
-                }
-
                 //instruction ready to add to txt file
-                
              
                 instructionToAddToText = opcode + rm + shamt + rn + rd;
 
             }
-            //LSL and LSR and ASR commands
+            //LSL,LSR and ASR commands or commands with shift amount
             else if(currentInstruction.contains("#")){
                 StringTokenizer st = new StringTokenizer(currentInstruction, " X,;/\t#");
                 int i = 0;
                 while (st.hasMoreTokens()) {
                     String currentToken = st.nextToken();
                     //System.out.println(currentToken);
-                    if( i == 1) rd = currentToken;
-                    if( i == 2) rn = currentToken;
-                    if( i == 3){
-                        immediate = currentToken;
-                        break;
+                    switch (i){
+                        case 1: rd = currentToken;break;
+                        case 2: rn = currentToken;break;
+                        case 3: immediate = currentToken;break;
+                        case 5: rm = immediate; immediate = currentToken;break;
                     }
                     i++;
                 }
+
                 checkForSpecReg();
                 //converting decimal to binary with correct
                 //number of leading zeros.
@@ -762,13 +754,29 @@ public class softwareProject
                         rm = rm.substring(rm.length() - 6);// get 0b-6b of binary code
                         shamt = Integer.toBinaryString(imms);
                         shamt = String.format("%06d",Integer.parseInt(shamt));
-                    }else if(currentCommand.equals("LSR") || currentCommand.equals("ASR")){
+                    }
+                    else if(currentCommand.equals("LSR") || currentCommand.equals("ASR")){
                         immr = tempInt;
                         imms = 63;      //64b version
                         rm = Integer.toBinaryString(immr);
                         rm = String.format("%06d",Integer.parseInt(rm));
                         shamt = Integer.toBinaryString(imms);
                         shamt = String.format("%06d",Integer.parseInt(shamt));
+                    }
+                    else {
+                        if(currentInstruction.contains("LSR")){
+                            opcode = opcode.substring(0,opcode.length()-3) + "010";
+                        }
+                        else if(currentInstruction.contains("ASR")){
+                            opcode = opcode.substring(0,opcode.length()-3) + "100";
+                        }
+
+                        shamt = Integer.toBinaryString(tempInt);
+                        shamt = String.format("%06d",Integer.parseInt(shamt));
+                        tempInt = Integer.parseInt(rm);
+                        rm = Integer.toBinaryString(tempInt);
+                        tempInt = Integer.parseInt(rm);
+                        rm = String.format("%05d", tempInt);
                     }
                     //instruction ready to add to txt file
                     instructionToAddToText = opcode + rm + shamt + rn + rd;
@@ -779,7 +787,6 @@ public class softwareProject
                     errorMessages.add("immediate value should be in range '0-63' for " +"'"+ currentCommand +"'"+ " instructions");
                     errorCount++;
                 }
-
             }
             //Checks for specific R Formats
             if( currentCommand.equals("NOP")){
@@ -807,7 +814,6 @@ public class softwareProject
 
                 shamt = "000000";
 */
-
                 //instruction ready to add to txt file
 //                instructionToAddToText = opcode + rm + shamt + rn + rd;
                 instructionToAddToText = "11010101000000110010000000011111";
