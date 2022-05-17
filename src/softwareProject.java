@@ -1,6 +1,7 @@
 import java.lang.*;
 import java.io.*;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
@@ -637,7 +638,6 @@ public class softwareProject
 
         //R Format
         if( format.equals("R")){
-
             //Error checker
             if(currentInstruction.contains("#") && !currentInstruction.contains("LSL") && !currentInstruction.contains("LSR")
             && !currentInstruction.contains("ASR")){
@@ -647,11 +647,12 @@ public class softwareProject
                 errorMessages.add("Error: Line " + (currentLineNumber + 1));
                 errorMessages.add("'" +currentCommand+ "'" + " is a R Format instruction that only takes register inputs, Immediate values are invalid");
                 errorCount++;
-
             }
             else if(currentInstruction.contains(",") && !currentInstruction.contains("#")){
                 StringTokenizer st = new StringTokenizer(currentInstruction, " X,;/\t");
                 int i = 0;
+                int tempInt = 0;
+
                 while (st.hasMoreTokens()) {
                     String currentToken = st.nextToken();
                     //System.out.println(currentToken);
@@ -664,53 +665,61 @@ public class softwareProject
                     i++;
                 }
 
-                //Checks for some special R format commands
-                if(currentCommand.equals("CMP")){
-                    rm = rn;
-                    rn = rd;
-                    rd = "ZR";
+                try{
+                    //Checks for some special R format commands
+                    if(currentCommand.equals("CMP")){
+                        rm = rn;
+                        rn = rd;
+                        rd = "ZR";
 
+                    }
+                    else if( currentCommand.equals("MOV")){
+                        rm = rn;
+                        rn = "XZR";}
+                    else if( currentCommand.equals("NEG")){
+                        rm = rn;
+                        rn = "ZR";
+                    }
+                    //fill up the shamt area
+                    switch(currentCommand){
+                        case "MUL":shamt = "011111";break;
+                        case "UDIV":shamt = "000010";break;
+                        case "SDIV":shamt = "000011";break;
+                        default:shamt = "000000";break;
+                    }
+
+                    //Translates registers SP, LR,ZR and FP to their decimal values
+                    checkForSpecReg();
+
+                    //converting decimal to binary with correct
+                    //number of leading zeros.
+
+                    tempInt = Integer.parseInt(rd);
+                    rd = Integer.toBinaryString(tempInt);
+                    tempInt = Integer.parseInt(rd);
+                    rd = String.format("%05d", tempInt);
+
+                    tempInt = Integer.parseInt(rn);
+                    rn = Integer.toBinaryString(tempInt);
+                    tempInt = Integer.parseInt(rn);
+                    rn = String.format("%05d", tempInt);
+
+                    tempInt = Integer.parseInt(rm);
+                    rm = Integer.toBinaryString(tempInt);
+                    tempInt = Integer.parseInt(rm);
+                    rm = String.format("%05d", tempInt);
+
+                    //instruction ready to add to txt file
+
+                    instructionToAddToText = opcode + rm + shamt + rn + rd;
                 }
-                else if( currentCommand.equals("MOV")){
-                    rm = rn;
-                    rn = "XZR";}
-                else if( currentCommand.equals("NEG")){
-                    rm = rn;
-                    rn = "ZR";
+                catch (NumberFormatException exception){
+                    System.out.println(exception);
+                    instructionToAddToText = "ERROR: operands not detected";
+                    errorMessages.add("Error: Line " + (currentLineNumber + 1));
+                    errorMessages.add("operands of " +"'"+ currentCommand +"'"+ " not detected");
+                    errorCount++;
                 }
-                //fill up the shamt area
-                switch(currentCommand){
-                    case "MUL":shamt = "011111";break;
-                    case "UDIV":shamt = "000010";break;
-                    case "SDIV":shamt = "000011";break;
-                    default:shamt = "000000";break;
-                }
-
-                //Translates registers SP, LR,ZR and FP to their decimal values
-                checkForSpecReg();
-
-                //converting decimal to binary with correct
-                //number of leading zeros.
-                int tempInt = 0;
-                tempInt = Integer.parseInt(rd);
-                rd = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rd);
-                rd = String.format("%05d", tempInt);
-
-                tempInt = Integer.parseInt(rn);
-                rn = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rn);
-                rn = String.format("%05d", tempInt);
-
-                tempInt = Integer.parseInt(rm);
-                rm = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rm);
-                rm = String.format("%05d", tempInt);
-
-                //instruction ready to add to txt file
-             
-                instructionToAddToText = opcode + rm + shamt + rn + rd;
-
             }
             //LSL,LSR and ASR commands or commands with shift amount
             else if(currentInstruction.contains("#")){
@@ -734,88 +743,72 @@ public class softwareProject
                 int tempInt = 0;
                 int immr=0;
                 int imms=0;
-                tempInt = Integer.parseInt(rd);
-                rd = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rd);
-                rd = String.format("%05d", tempInt);
+                try{
+                    tempInt = Integer.parseInt(rd);
+                    rd = Integer.toBinaryString(tempInt);
+                    tempInt = Integer.parseInt(rd);
+                    rd = String.format("%05d", tempInt);
 
-                tempInt = Integer.parseInt(rn);
-                rn = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rn);
-                rn = String.format("%05d", tempInt);
+                    tempInt = Integer.parseInt(rn);
+                    rn = Integer.toBinaryString(tempInt);
+                    tempInt = Integer.parseInt(rn);
+                    rn = String.format("%05d", tempInt);
 
-                //Error testing for negative immediate
-                tempInt = Integer.parseInt(immediate);
-                if(tempInt < 64 && tempInt >=0){
-                    if(currentCommand.equals("LSL")){
-                        immr = (-tempInt) % 64;
-                        imms = 63 - tempInt;
-                        rm = Integer.toBinaryString(immr);
-                        rm = rm.substring(rm.length() - 6);// get 0b-6b of binary code
-                        shamt = Integer.toBinaryString(imms);
-                        shamt = String.format("%06d",Integer.parseInt(shamt));
-                    }
-                    else if(currentCommand.equals("LSR") || currentCommand.equals("ASR")){
-                        immr = tempInt;
-                        imms = 63;      //64b version
-                        rm = Integer.toBinaryString(immr);
-                        rm = String.format("%06d",Integer.parseInt(rm));
-                        shamt = Integer.toBinaryString(imms);
-                        shamt = String.format("%06d",Integer.parseInt(shamt));
-                    }
-                    else {
-                        if(currentInstruction.contains("LSR")){
-                            opcode = opcode.substring(0,opcode.length()-3) + "010";
+                    //Error testing for negative immediate
+                    tempInt = Integer.parseInt(immediate);
+
+                    if(tempInt < 64 && tempInt >=0){
+                        if(currentCommand.equals("LSL")){
+                            immr = (-tempInt) % 64;
+                            imms = 63 - tempInt;
+                            rm = Integer.toBinaryString(immr);
+                            rm = rm.substring(rm.length() - 6);// get 0b-6b of binary code
+                            shamt = Integer.toBinaryString(imms);
+                            shamt = String.format("%06d",Integer.parseInt(shamt));
                         }
-                        else if(currentInstruction.contains("ASR")){
-                            opcode = opcode.substring(0,opcode.length()-3) + "100";
+                        else if(currentCommand.equals("LSR") || currentCommand.equals("ASR")){
+                            immr = tempInt;
+                            imms = 63;      //64b version
+                            rm = Integer.toBinaryString(immr);
+                            rm = String.format("%06d",Integer.parseInt(rm));
+                            shamt = Integer.toBinaryString(imms);
+                            shamt = String.format("%06d",Integer.parseInt(shamt));
                         }
+                        else {
+                            if(currentInstruction.contains("LSR")){
+                                opcode = opcode.substring(0,opcode.length()-3) + "010";
+                            }
+                            else if(currentInstruction.contains("ASR")){
+                                opcode = opcode.substring(0,opcode.length()-3) + "100";
+                            }
 
-                        shamt = Integer.toBinaryString(tempInt);
-                        shamt = String.format("%06d",Integer.parseInt(shamt));
-                        tempInt = Integer.parseInt(rm);
-                        rm = Integer.toBinaryString(tempInt);
-                        tempInt = Integer.parseInt(rm);
-                        rm = String.format("%05d", tempInt);
+                            shamt = Integer.toBinaryString(tempInt);
+                            shamt = String.format("%06d",Integer.parseInt(shamt));
+                            tempInt = Integer.parseInt(rm);
+                            rm = Integer.toBinaryString(tempInt);
+                            tempInt = Integer.parseInt(rm);
+                            rm = String.format("%05d", tempInt);
+                        }
+                        //instruction ready to add to txt file
+                        instructionToAddToText = opcode + rm + shamt + rn + rd;
                     }
-                    //instruction ready to add to txt file
-                    instructionToAddToText = opcode + rm + shamt + rn + rd;
+                    else{
+                        instructionToAddToText = "ERROR: immediate is out of range";
+                        errorMessages.add("Error: Line " + (currentLineNumber + 1));
+                        errorMessages.add("immediate value should be in range '0-63' for " +"'"+ currentCommand +"'"+ " instructions");
+                        errorCount++;
+                    }
                 }
-                else{
-                    instructionToAddToText = "ERROR: immediate is out of range";
+                catch (NumberFormatException exception){
+                    System.out.println(exception);
+                    instructionToAddToText = "ERROR: operands not detected";
                     errorMessages.add("Error: Line " + (currentLineNumber + 1));
-                    errorMessages.add("immediate value should be in range '0-63' for " +"'"+ currentCommand +"'"+ " instructions");
+                    errorMessages.add("operands of " +"'"+ currentCommand +"'"+ " not detected");
                     errorCount++;
                 }
             }
             //Checks for specific R Formats
-            if( currentCommand.equals("NOP")){
-/*
-                rm = "ZR";
-                rd = "ZR";
-                rn = "ZR";
-                checkForSpecReg();
-
-                int tempInt = 0;
-                tempInt = Integer.parseInt(rd);
-                rd = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rd);
-                rd = String.format("%05d", tempInt);
-
-                tempInt = Integer.parseInt(rn);
-                rn = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rn);
-                rn = String.format("%05d", tempInt);
-
-                tempInt = Integer.parseInt(rm);
-                rm = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rm);
-                rm = String.format("%05d", tempInt);
-
-                shamt = "000000";
-*/
-                //instruction ready to add to txt file
-//                instructionToAddToText = opcode + rm + shamt + rn + rd;
+            if(currentCommand.equals("NOP")){
                 instructionToAddToText = "11010101000000110010000000011111";
             }
 
@@ -872,6 +865,7 @@ public class softwareProject
             //adds Binary to output txt file
             binaryCode.add(instructionToAddToText);
         }
+
         //I Format
         else if( format.equals("I")){
             if(currentInstruction.contains("#") == false){
@@ -886,6 +880,7 @@ public class softwareProject
                 //Breaks up and disects the line
                 StringTokenizer st = new StringTokenizer(currentInstruction, " X,;/\t#");
                 long i = 0;
+                int tempInt = 0;
                 while (st.hasMoreTokens()) {
                     String currentToken = st.nextToken();
                     //System.out.println(currentToken);
@@ -898,31 +893,30 @@ public class softwareProject
                     i++;
                 }
 
-                //if command is CMPI
-                if( currentCommand.equals("CMPI")){
-                    immediate = rn;
-                    rn = rd;
-                    rd = "ZR";
-                }
-
-                checkForSpecReg();
-
-                //converting decimal to binary with correct
-                //number of leading zeros.
-                int tempInt = 0;
-                tempInt = Integer.parseInt(rd);
-                rd = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rd);
-                rd = String.format("%05d", tempInt);
-
-                tempInt = Integer.parseInt(rn);
-                rn = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rn);
-                rn = String.format("%05d", tempInt);
-
-                //Errors out if the value is to large to fit in 12 bits signed
-                //aslo checks if it is negative
                 try{
+                    //if command is CMPI
+                    if( currentCommand.equals("CMPI")){
+                        immediate = rn;
+                        rn = rd;
+                        rd = "ZR";
+                    }
+
+                    checkForSpecReg();
+                    //converting decimal to binary with correct
+                    //number of leading zeros.
+                    if(rd==null || rn==null || immediate==null)throw new NullPointerException("null operands");
+                    tempInt = Integer.parseInt(rd);
+                    rd = Integer.toBinaryString(tempInt);
+                    tempInt = Integer.parseInt(rd);
+                    rd = String.format("%05d", tempInt);
+
+                    tempInt = Integer.parseInt(rn);
+                    rn = Integer.toBinaryString(tempInt);
+                    tempInt = Integer.parseInt(rn);
+                    rn = String.format("%05d", tempInt);
+
+                    //Errors out if the value is to large to fit in 12 bits signed
+                    //aslo checks if it is negative
                     //only do this if the immediate is not negative
                     if(immediate.contains("-") == false) {
                         tempInt = Integer.parseInt(immediate);
@@ -945,10 +939,16 @@ public class softwareProject
                         errorCount++;
                     }
                 }
-                catch(NumberFormatException e){
-                    instructionToAddToText = "ERROR: Immediate value is to large";
+                catch (NumberFormatException e){
+                    instructionToAddToText = "ERROR: immediate value is to large";
                     errorMessages.add("Error: Line " + (currentLineNumber + 1));
-                    errorMessages.add("Immediate " + "'" + tempInt + "'" +" exceeds 12-bit signed MAX_VALUE");
+                    errorMessages.add("immediate "+"'"+immediate+ "'" +" is exceeds 12-bit signed MAX_VALUE");
+                    errorCount++;
+                }
+                catch (NullPointerException e){
+                    instructionToAddToText = "ERROR: operands not detected";
+                    errorMessages.add("Error: Line " + (currentLineNumber + 1));
+                    errorMessages.add("operands of " +"'"+ currentCommand +"'"+ " not detected");
                     errorCount++;
                 }
             }
@@ -958,6 +958,7 @@ public class softwareProject
 
         //D Format
         else if (format.equals("D")){
+
             if(currentInstruction.contains("[") == false || currentInstruction.contains("]") == false){
                 instructionToAddToText = "ERROR: Invalid 'D' Format - Missing or incorrect Brackets";
                 errorMessages.add("Error: Line " + (currentLineNumber + 1));
@@ -990,39 +991,50 @@ public class softwareProject
                 //converting decimal to binary with correct
                 //number of leading zeros.
                 int tempInt = 0;
-                tempInt = Integer.parseInt(rt);
-                rt = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rt);
-                rt = String.format("%05d", tempInt);
+                try{
+                    tempInt = Integer.parseInt(rt);
+                    rt = Integer.toBinaryString(tempInt);
+                    tempInt = Integer.parseInt(rt);
+                    rt = String.format("%05d", tempInt);
 
-                tempInt = Integer.parseInt(rn);
-                rn = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rn);
-                rn = String.format("%05d", tempInt);
+                    tempInt = Integer.parseInt(rn);
+                    rn = Integer.toBinaryString(tempInt);
+                    tempInt = Integer.parseInt(rn);
+                    rn = String.format("%05d", tempInt);
 
-                tempInt = Integer.parseInt(address);
-                address = Integer.toBinaryString(tempInt);
-
-                if(tempInt < 0){
-                    address = address.substring(address.length()-9);
-
-                }
-                else{
                     tempInt = Integer.parseInt(address);
+                    address = Integer.toBinaryString(tempInt);
 
-                    address = String.format("%09d", tempInt);
+                    if(tempInt < 0){
+                        address = address.substring(address.length()-9);
+
+                    }
+                    else{
+                        tempInt = Integer.parseInt(address);
+
+                        address = String.format("%09d", tempInt);
+                    }
+
+                    String tinyOpcode = "00";
+
+                    //instruction ready to add to txt file
+                    instructionToAddToText = opcode + address + tinyOpcode + rn + rt;
+                }
+                catch (NumberFormatException exception){
+                    System.out.println(exception);
+                    instructionToAddToText = "ERROR: operands not detected";
+                    errorMessages.add("Error: Line " + (currentLineNumber + 1));
+                    errorMessages.add("operands of " +"'"+ currentCommand +"'"+ " not detected");
+                    errorCount++;
                 }
 
-                String tinyOpcode = "00";
-
-                //instruction ready to add to txt file
-                instructionToAddToText = opcode + address + tinyOpcode + rn + rt;
             }
 
             //adds Binary to output
             binaryCode.add(instructionToAddToText);
 
         }
+
         //B Format
         else if (format.equals("B")){
             StringTokenizer st = new StringTokenizer(currentInstruction, " X,;/\t#[]");
@@ -1035,7 +1047,6 @@ public class softwareProject
                     break;
 
                 }
-
                 i++;
             }
 
@@ -1055,11 +1066,9 @@ public class softwareProject
 
         //B Format
         else if (format.equals("CB")){
-
             //determines the type of conditional branching
             if(currentCommand.equals("CBZ") || currentCommand.equals("CBNZ")){
                 //rt is the register it's comparing to
-
                 StringTokenizer st = new StringTokenizer(currentInstruction, " X,;/\t#[]");
                 int i = 0;
                 while (st.hasMoreTokens()) {
@@ -1067,13 +1076,11 @@ public class softwareProject
                     //System.out.println(currentToken);
                     if( i == 1){
                         rt = currentToken;
-
                     }
                     if( i == 2){
                         jumpToLabel = currentToken;
                         break;
                     }
-
                     i++;
                 }
                 checkForSpecReg();
@@ -1083,18 +1090,25 @@ public class softwareProject
                 condBRAddr = retBranchAddr();
                 if(badBranch == false){
                     int tempInt = 0;
-                    tempInt = Integer.parseInt(rt);
-                    rt = Integer.toBinaryString(tempInt);
-                    tempInt = Integer.parseInt(rt);
-                    rt = String.format("%05d", tempInt);
+                    try{
+                        tempInt = Integer.parseInt(rt);
+                        rt = Integer.toBinaryString(tempInt);
+                        tempInt = Integer.parseInt(rt);
+                        rt = String.format("%05d", tempInt);
 
-                    //instruction ready to add to txt file
-                    instructionToAddToText = opcode + condBRAddr + rt;
+                        //instruction ready to add to txt file
+                        instructionToAddToText = opcode + condBRAddr + rt;
 
-                    //adds Binary to output
-                    binaryCode.add(instructionToAddToText);
+                        //adds Binary to output
+                    }
+                    catch (NumberFormatException exception){
+                        System.out.println(exception);
+                        instructionToAddToText = "ERROR: operands not detected";
+                        errorMessages.add("Error: Line " + (currentLineNumber + 1));
+                        errorMessages.add("operands of " +"'"+ currentCommand +"'"+ " not detected");
+                        errorCount++;
+                    }
                 }
-
             }
             //else if(currentCommand.equals("B.")){
             else{
@@ -1111,7 +1125,7 @@ public class softwareProject
                     i++;
                 }
                 checkForSpecReg();
-
+                badBranch = false;
                 if(currentCommand.equals("B.EQ")){
                     rt = "00000";
                 }
@@ -1160,20 +1174,26 @@ public class softwareProject
                 else if(currentCommand.equals("B.NV")){
                     rt = "01111";
                 }
+                else {
+                    badBranch = true;
+                    instructionToAddToText = "ERROR: Invalid Instruction";
+                    binaryCode.add(instructionToAddToText);
+                    errorMessages.add("Error: Line " + (currentLineNumber + 1));
+                    errorMessages.add("'" + currentCommand + "'" + " is an invalid ARMv8 Instruction");
+                    errorCount++;
+                }
                 //call to retBranchAddr
 
-                badBranch = false;
                 condBRAddr = retBranchAddr();
-
                 if(badBranch == false){
                     //instruction ready to add to txt file
                     instructionToAddToText = opcode + condBRAddr + rt;
                     //adds Binary to output
-                    binaryCode.add(instructionToAddToText);
                 }
             }
-
+            binaryCode.add(instructionToAddToText);
         }
+
         //IM / IW format
         else if( format.equals("IM")) {
             String lslCommand = null;
@@ -1222,14 +1242,15 @@ public class softwareProject
                 }
 
                 int tempInt = 0;
-                tempInt = Integer.parseInt(rd);
-                //int negImmChecker = tempInt;
-                rd = Integer.toBinaryString(tempInt);
-                tempInt = Integer.parseInt(rd);
-                rd = String.format("%05d", tempInt);
-
-                //Error testing for negative immediate
                 try {
+                    if(rd==null || immediate==null)throw new NullPointerException("null operands");
+                    tempInt = Integer.parseInt(rd);
+                    //int negImmChecker = tempInt;
+                    rd = Integer.toBinaryString(tempInt);
+                    tempInt = Integer.parseInt(rd);
+                    rd = String.format("%05d", tempInt);
+
+                    //Error testing for negative immediate
                     tempInt = Integer.parseInt(immediate);
                     if(tempInt>65535){
                         instructionToAddToText = "ERROR: Immediate value is to large";
@@ -1242,15 +1263,22 @@ public class softwareProject
                         //adds Binary to output
                         instructionToAddToText = opcode + hw + immediate + rd;
                     }
-                } catch (NumberFormatException e) {
+                }
+                catch (NumberFormatException e) {
                     instructionToAddToText = "ERROR: Negative immediate value detected";
                     errorMessages.add("Error: Line " + (currentLineNumber + 1));
                     errorMessages.add("Negative Immediate value not allowed with " + currentCommand + " command");
                     errorCount++;
-                }finally {
-                    binaryCode.add(instructionToAddToText);
+                }
+                catch (NullPointerException exception){
+                    System.out.println(exception);
+                    instructionToAddToText = "ERROR: operands not detected";
+                    errorMessages.add("Error: Line " + (currentLineNumber + 1));
+                    errorMessages.add("operands of " +"'"+ currentCommand +"'"+ " not detected,or ");
+                    errorCount++;
                 }
             }
+            binaryCode.add(instructionToAddToText);
         }
     }
 

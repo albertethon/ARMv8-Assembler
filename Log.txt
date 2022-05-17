@@ -1,4 +1,9 @@
 Log Report (input.txt)
-	0 Errors Detected
+	2 Errors Detected
 
-Sucessfully Translated 63 lines of code
+Error: Line 3
+	operands of 'ADDS' not detected
+
+Error: Line 5
+	Immediate '10246853' exceeds 12-bit signed MAX_VALUE
+

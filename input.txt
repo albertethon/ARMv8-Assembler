@@ -1,63 +1,6 @@
-alpha: ADD X0, X5, X10
-ADDIS X1, X29, #1024
-ADDI X3, X6, #89
-ADDS X8, X2, X18
-ADDS X8, X2, X18,LSL #16
-SUBS X8, X2, X18, LSR #16
-bravo: AND X14, X4, X30
 charlie: ANDI X27, X19, #128
-ANDIS X5, X12, #120
-ANDS X15, X22, X26
-B echo
-B.EQ alpha
-B.NE foxtrot
-B.HS bravo
-B.CS bravo
-B.CC charlie
-B.LO charlie
-B.MI alpha
-B.PL delta
-B.VS echo
-delta: B.VC foxtrot
-B.HI bravo
-B.LS bravo
-B.GE golf
-B.LT charlie
-B.GT delta
-B.LE foxtrot
-B.AL echo
-B.NV alpha
-BL bravo
-BR X8
-BLR X8
-CBNZ X10, golf
-echo: CBZ SP, charlie
-EOR X9, X7, X11
-EORI LR, X13, #0
-LDUR X16, [SP, #-80]
-LSL X17, X20, #21
-LSR X28, X25, #3
-ASR X21, X6, #63
-ORR X3, X22, X17
-ORRI X16, X24, #45
-foxtrot: STUR X23, [X0, #13]
-SUB X19, XZR, X17
-SUBI X26, X9, #123
-SUBIS X29, X12, #3
-SUBS X4, X8, X18
-CMP SP, X13
-CMPI X1, #10
-MOV X5, X25
-NOP
-BRK
-BRK #7
-NEG X23, X10
-golf: RET
-MOVK X9, #255, LSL #16
-MOVZ X1, #2
-MOVZ X3, #15,LSL #32
-MUL X1,X2, X3
-SDIV X9, X5, X2
-UDIV X11,X7, X15
-SMULH
-UMULH
+ADDI X3,X6 #89
+ADDS X8,X
+ADDI X3,X6,#89
+ADDIS X1, X29, #10246853
+ADDI X3, X6, #89

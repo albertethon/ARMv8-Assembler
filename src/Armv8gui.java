@@ -106,10 +106,16 @@ public class Armv8gui {
             }
             int tmp=0;
             while(tmp < cmpresult.length()){
-                for(int i=28;i>3;i-=4){
-                    cmpresult.insert(tmp + i,' ');//repeat 7 times each line
+                if(cmpresult.charAt(tmp) != 'E'){
+                    for(int i=28;i>3;i-=4){
+                        cmpresult.insert(tmp + i,' ');//repeat 7 times each line
+                    }
+                    tmp = tmp + 32 + 7 + 2;// 32 machine code,7 blank characters,2 \r\n
+                }else{
+                    int lineend=0;
+                    lineend = cmpresult.indexOf("\r\n",tmp);
+                    tmp = lineend + 2;
                 }
-                tmp = tmp + 32 + 7 + 2;// 32 machine code,7 blank characters,2 \r\n
             }
             tmp = 0;
             outputArea.setText(cmpresult.toString());
