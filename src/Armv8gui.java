@@ -114,7 +114,7 @@ public class Armv8gui {
                 }else{
                     int lineend=0;
                     lineend = cmpresult.indexOf("\r\n",tmp);
-                    tmp += lineend + 2;
+                    tmp = lineend + 2;
                 }
             }
             tmp = 0;
