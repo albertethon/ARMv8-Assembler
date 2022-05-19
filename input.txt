@@ -1,10 +1,4 @@
-B alpha
-BRK
-BL bravo
-delta: NOP
-NOP
-bravo: BR X30
-BRK
-B.MI delta
-alpha: 
-BRK
+ANDS X15,X22,X26,LSL #32
+ORR X3,X22,X17,LSR #16
+EOR X9,X7,X11,ASR #16
+MOV X5,X25,LSL #16
