@@ -1,6 +1,4 @@
 Log Report (input.txt)
-	1 Errors Detected
+	0 Errors Detected
 
-Error: Line 4
-	operands of 'MOV' not detected
-
+Sucessfully Translated 66 lines of code

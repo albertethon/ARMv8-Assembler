@@ -8,6 +8,9 @@ bravo: AND X14, X4, X30
 charlie: ANDI X27, X19, #128
 ANDIS X5, X12, #120
 ANDS X15, X22, X26
+ANDS X15, X22, X26, LSR #16
+ORR X15, X22, X26, ASR #32
+EOR X15, X22, X26, ROR #16
 B echo
 B.EQ alpha
 B.NE foxtrot
