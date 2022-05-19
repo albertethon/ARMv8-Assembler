@@ -1,7 +1,6 @@
 import java.lang.*;
 import java.io.*;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
@@ -32,6 +31,8 @@ public class softwareProject
     protected ArrayList<String> binaryCode = new ArrayList<String>();
     //ArrayList of Error Messages for the log file
     protected ArrayList<String> errorMessages = new ArrayList<String>();
+    //shift label in command
+    protected ArrayList<String> shiftLabel = new ArrayList<String>(3);
     //The Current opcode of the instruction that the assembler is translating
     protected String opcode = null;
     //The Current format of hte instruction that the assembler is translating
@@ -79,6 +80,7 @@ public class softwareProject
     //boolean variable that helps determine if a file was found/inputted correctly
     boolean fileNotFound = false;
 
+
     /**
      * Constructor for objects of class newSoftware
      * This is used to set defaults and manipulate variables from the Driver
@@ -95,6 +97,9 @@ public class softwareProject
         //dictates what the driver will do if the file is not found
         //defaulted to false because we didnt check for a file yet
         fileNotFound = false;
+        shiftLabel.add("LSL");
+        shiftLabel.add("LSR");
+        shiftLabel.add("ASR");
     }
 
     /**
@@ -640,7 +645,7 @@ public class softwareProject
         if( format.equals("R")){
             //Error checker
             if(currentInstruction.contains("#") && !currentInstruction.contains("LSL") && !currentInstruction.contains("LSR")
-            && !currentInstruction.contains("ASR")){
+            && !currentInstruction.contains("ASR") && !currentInstruction.contains("ROR")){
                 //if the line of code does contain a #
                 //this is not an R format instruction
                 instructionToAddToText = "ERROR: Invalid 'R' Format - Immediate Detected";
@@ -727,7 +732,7 @@ public class softwareProject
                 int i = 0;
                 while (st.hasMoreTokens()) {
                     String currentToken = st.nextToken();
-                    //System.out.println(currentToken);
+                    // if contains shift label
                     switch (i){
                         case 1: rd = currentToken;break;
                         case 2: rn = currentToken;break;
@@ -780,6 +785,9 @@ public class softwareProject
                             }
                             else if(currentInstruction.contains("ASR")){
                                 opcode = opcode.substring(0,opcode.length()-3) + "100";
+                            }
+                            else if(currentInstruction.contains("ROR")){
+                                opcode = opcode.substring(0,opcode.length()-3) + "110";
                             }
 
                             shamt = Integer.toBinaryString(tempInt);
@@ -1371,9 +1379,9 @@ public class softwareProject
         for(int j = 0; j <= inputCode.size(); j++){
             if( j != inputCode.size()){
                 tempString = inputCode.get(j);
-                if( tempString.contains(jumpToLabel + ":") == true){
+                if(tempString.contains(jumpToLabel + ":")){
                     //testing if the label is the only piece on a line
-                    if(inputCode.get(j).equals(jumpToLabel + ":")== true){
+                    if(inputCode.get(j).equals(jumpToLabel + ":")){
                         branchToInstNum = j;
                         break;
 
@@ -1384,7 +1392,6 @@ public class softwareProject
                     }
                 }
             }
-
             //Error checker to make sure the label is present in the code and exists
             if(( j == inputCode.size()) && (tempString.contains(jumpToLabel + ":") == false)){
                 instructionToAddToText = "ERROR: Missing jump to label";
@@ -1393,7 +1400,6 @@ public class softwareProject
                 errorMessages.add("Error: Line " + (currentLineNumber + 1));
                 errorMessages.add("ERROR: there is no instruction labeled" + jumpToLabel + " in the code");
                 badBranch = true;
-
             }
         }
 
@@ -1401,7 +1407,7 @@ public class softwareProject
         //determine the correct branch address
 
         if(currentLineNumber != branchToInstNum){
-            tempBranchAddr = (branchToInstNum - currentLineNumber - 1);
+            tempBranchAddr = (branchToInstNum - currentLineNumber);
         }
 
         else if( currentLineNumber == branchToInstNum ){
