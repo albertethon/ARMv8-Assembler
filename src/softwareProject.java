@@ -1371,9 +1371,9 @@ public class softwareProject
         for(int j = 0; j <= inputCode.size(); j++){
             if( j != inputCode.size()){
                 tempString = inputCode.get(j);
-                if( tempString.contains(jumpToLabel + ":") == true){
+                if(tempString.contains(jumpToLabel + ":")){
                     //testing if the label is the only piece on a line
-                    if(inputCode.get(j).equals(jumpToLabel + ":")== true){
+                    if(inputCode.get(j).equals(jumpToLabel + ":")){
                         branchToInstNum = j;
                         break;
 
@@ -1384,7 +1384,6 @@ public class softwareProject
                     }
                 }
             }
-
             //Error checker to make sure the label is present in the code and exists
             if(( j == inputCode.size()) && (tempString.contains(jumpToLabel + ":") == false)){
                 instructionToAddToText = "ERROR: Missing jump to label";
@@ -1393,7 +1392,6 @@ public class softwareProject
                 errorMessages.add("Error: Line " + (currentLineNumber + 1));
                 errorMessages.add("ERROR: there is no instruction labeled" + jumpToLabel + " in the code");
                 badBranch = true;
-
             }
         }
 
@@ -1401,7 +1399,7 @@ public class softwareProject
         //determine the correct branch address
 
         if(currentLineNumber != branchToInstNum){
-            tempBranchAddr = (branchToInstNum - currentLineNumber - 1);
+            tempBranchAddr = (branchToInstNum - currentLineNumber);
         }
 
         else if( currentLineNumber == branchToInstNum ){

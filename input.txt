@@ -1,6 +1,10 @@
-charlie: ANDI X27, X19, #128
-ADDI X3,X6 #89
-ADDS X8,X
-ADDI X3,X6,#89
-ADDIS X1, X29, #10246853
-ADDI X3, X6, #89
+B alpha
+BRK
+BL bravo
+delta: NOP
+NOP
+bravo: BR X30
+BRK
+B.MI delta
+alpha: 
+BRK
