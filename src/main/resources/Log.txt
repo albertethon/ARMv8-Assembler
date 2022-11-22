@@ -1,0 +1,18 @@
+Log Report (input.txt)
+	5 Errors Detected
+
+Error: Line 1
+	'1' is an invalid ARMv8 Instruction
+
+Error: Line 5
+	'UMULH' is a R Format instruction that only takes register inputs, Immediate values are invalid
+
+Error: Line 17
+	ERROR: there is no instruction labeledalpha in the code
+
+Error: Line 23
+	ERROR: there is no instruction labeledalpha in the code
+
+Error: Line 34
+	ERROR: there is no instruction labeledalpha in the code
+

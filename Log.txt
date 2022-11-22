@@ -1,4 +1,0 @@
-Log Report (input.txt)
-	0 Errors Detected
-
-Sucessfully Translated 66 lines of code

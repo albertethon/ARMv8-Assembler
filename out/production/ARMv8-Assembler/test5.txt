@@ -1,7 +1,0 @@
-﻿MOV X2, X1
-Label:
-ADDI X2, X1, XZR		;alternate comment
-ADD X2, X1, #0
-//no code then blank line
-
-CBNZ X2, Label			//testing comment

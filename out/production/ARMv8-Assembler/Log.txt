@@ -1,6 +1,0 @@
-Log Report (input.txt)
-	1 Errors Detected
-
-Error: Line 1
-	'742' is an invalid ARMv8 Instruction
-

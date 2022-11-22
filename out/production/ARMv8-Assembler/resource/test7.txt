@@ -1,6 +1,0 @@
-ADD X1, X2, X3
-//NOP
-RET
-;NOP
-BR X30
-BR X31
